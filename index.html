@@ -23,7 +23,7 @@ body {
   background: #020617;
   padding: 24px;
   border-radius: 22px;
-  width: 320px;
+  width: 330px;
   text-align: center;
   box-shadow: 0 20px 40px rgba(0,0,0,.5);
 }
@@ -41,8 +41,17 @@ h1 {
 }
 .day { color: #fde047; }
 .night { color: #60a5fa; }
-.note {
+button {
   margin-top: 14px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-size: .9rem;
+}
+.note {
+  margin-top: 10px;
   font-size: .8rem;
   opacity: .7;
 }
@@ -54,29 +63,54 @@ h1 {
   <h1>⏰ Hora Minecraft</h1>
   <div class="time" id="time">--:--</div>
   <div class="state" id="state">---</div>
-  <div class="note">Server público · Sin mods</div>
+
+  <button onclick="syncTime()">🔄 Sincronizar hora</button>
+
+  <div class="note">La hora queda guardada automáticamente</div>
 </div>
 
 <script>
-/*
-  AJUSTE IMPORTANTE
-  Cambiá estos valores según la hora REAL del server
-*/
-const MC_START_HOUR = 6;
-const MC_START_MINUTE = 0;
-
-const realStart = Date.now();
-
-// 1 hora MC = 50 segundos reales
 const REAL_MS_PER_MC_MIN = (50 / 60) * 1000;
 const MC_MIN_PER_DAY = 1440;
 
-const startMcMinutes = MC_START_HOUR * 60 + MC_START_MINUTE;
+// Cargar datos guardados
+let mcStartMinutes = localStorage.getItem("mcStartMinutes");
+let realStart = localStorage.getItem("realStart");
+
+if (!mcStartMinutes || !realStart) {
+  mcStartMinutes = 6 * 60; // 06:00 default
+  realStart = Date.now();
+  localStorage.setItem("mcStartMinutes", mcStartMinutes);
+  localStorage.setItem("realStart", realStart);
+}
+
+mcStartMinutes = Number(mcStartMinutes);
+realStart = Number(realStart);
+
+function syncTime() {
+  const input = prompt("Hora actual del server (HH:MM)");
+  if (!input) return;
+
+  const [h, m] = input.split(":").map(Number);
+  if (
+    isNaN(h) || isNaN(m) ||
+    h < 0 || h > 23 ||
+    m < 0 || m > 59
+  ) {
+    alert("Formato inválido");
+    return;
+  }
+
+  mcStartMinutes = h * 60 + m;
+  realStart = Date.now();
+
+  localStorage.setItem("mcStartMinutes", mcStartMinutes);
+  localStorage.setItem("realStart", realStart);
+}
 
 function update() {
-  const now = Date.now();
-  const elapsedMcMin = (now - realStart) / REAL_MS_PER_MC_MIN;
-  const total = (startMcMinutes + elapsedMcMin) % MC_MIN_PER_DAY;
+  const elapsedMcMin = (Date.now() - realStart) / REAL_MS_PER_MC_MIN;
+  const total = (mcStartMinutes + elapsedMcMin) % MC_MIN_PER_DAY;
 
   const h = Math.floor(total / 60);
   const m = Math.floor(total % 60);
