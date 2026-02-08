@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reloj Minecraft</title>
+
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+
+<style>
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.box {
+  background: #020617;
+  padding: 24px;
+  border-radius: 22px;
+  width: 320px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,.5);
+}
+h1 {
+  margin: 0 0 10px;
+  font-size: 1.3rem;
+}
+.time {
+  font-size: 3.2rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+.state {
+  font-size: 1.1rem;
+}
+.day { color: #fde047; }
+.night { color: #60a5fa; }
+.note {
+  margin-top: 14px;
+  font-size: .8rem;
+  opacity: .7;
+}
+</style>
+</head>
+
+<body>
+<div class="box">
+  <h1>⏰ Hora Minecraft</h1>
+  <div class="time" id="time">--:--</div>
+  <div class="state" id="state">---</div>
+  <div class="note">Server público · Sin mods</div>
+</div>
+
+<script>
+/*
+  AJUSTE IMPORTANTE
+  Cambiá estos valores según la hora REAL del server
+*/
+const MC_START_HOUR = 6;
+const MC_START_MINUTE = 0;
+
+const realStart = Date.now();
+
+// 1 hora MC = 50 segundos reales
+const REAL_MS_PER_MC_MIN = (50 / 60) * 1000;
+const MC_MIN_PER_DAY = 1440;
+
+const startMcMinutes = MC_START_HOUR * 60 + MC_START_MINUTE;
+
+function update() {
+  const now = Date.now();
+  const elapsedMcMin = (now - realStart) / REAL_MS_PER_MC_MIN;
+  const total = (startMcMinutes + elapsedMcMin) % MC_MIN_PER_DAY;
+
+  const h = Math.floor(total / 60);
+  const m = Math.floor(total % 60);
+
+  document.getElementById("time").textContent =
+    String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0");
+
+  const state = document.getElementById("state");
+  if (h >= 6 && h < 18) {
+    state.textContent = "☀️ Día";
+    state.className = "state day";
+  } else {
+    state.textContent = "🌙 Noche";
+    state.className = "state night";
+  }
+}
+
+update();
+setInterval(update, 200);
+</script>
+</body>
+</html>
